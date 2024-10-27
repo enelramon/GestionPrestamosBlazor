@@ -72,9 +72,9 @@
 
     List<ToastMessage> messages = new List<ToastMessage>();
 
-    private void ShowMessage(ToastType toastType, string Mensaje) => messages.Add(CreateToastMessage(toastType, Mensaje));
+    private void ShowMessage(ToastType toastType) => messages.Add(CreateToastMessage(toastType));
 
-    private ToastMessage CreateToastMessage(ToastType toastType, string mensaje)
+    private ToastMessage CreateToastMessage(ToastType toastType)
     => new ToastMessage
         {
             Type = toastType,
@@ -90,13 +90,13 @@
         if (creado)
         {
             Mensaje = "Modificado correctamente";
-            ShowMessage(ToastType.Success, Mensaje);
+            ShowMessage(ToastType.Success);
             Volver();
         }
         else
         {
             Mensaje = "No se ha modificado correctamente";
-            ShowMessage(ToastType.Danger, Mensaje);
+            ShowMessage(ToastType.Danger);
         }
 
     }

@@ -83,6 +83,7 @@
             @* footer *@
             <div class="card-footer text-center mt-2">
                 <a href="/Cobro/Index" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
+                <Toasts class="p-3" Messages="messages" AutoHide="true" StackLength="3" Placement="ToastsPlacement.TopRight" />
                 <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
             </div>
         </div>
@@ -126,20 +127,42 @@
         await Task.CompletedTask;
     }
 
+    private readonly List<ToastMessage> messages = new List<ToastMessage>();
+
+    private void ShowMessage(ToastType toastType) => messages.Add(CreateToastMessage(toastType));
+
+    private ToastMessage CreateToastMessage(ToastType toastType)
+    => new ToastMessage
+        {
+            Type = toastType,
+            Title = "Blazor Bootstrap",
+            HelpText = $"{DateTime.Now}",
+            Message = Mensaje,
+        };
+
     public async Task Modificar() {
         var paso = await cobroService.Guardar(Cobro);
 
         if (paso) {
-            navigationManager.NavigateTo("/Cobro/Index");
+            Mensaje = "Modificado correctamente";
+            ShowMessage(ToastType.Success);
+            Volver();
         }
         else {
-            Mensaje = "No se ha creado correctamente";
+            Mensaje = "No se ha modificado correctamente";
+            ShowMessage(ToastType.Danger);
         }
     }
 
     public void RemoverDetalle(CobrosDetalle detalle) {
         Cobro.CobrosDetalle.Remove(detalle);
         DetalleSeleccionado = detalle;
+    }
+
+    public async Task Volver()
+    {
+        await Task.Delay(3000);
+        navigationManager.NavigateTo("/Cobro/Index");
     }
 }
 

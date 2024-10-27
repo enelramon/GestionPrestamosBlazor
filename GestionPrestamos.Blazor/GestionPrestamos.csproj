@@ -6,6 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 	<ItemGroup>
+		<PackageReference Include="Blazor.Bootstrap" Version="3.1.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.sqlite" Version="8.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.sqlserver" Version="8.0.10" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.tools" Version="8.0.10">

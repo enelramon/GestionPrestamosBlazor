@@ -4,6 +4,140 @@
 
 <h1>Gestion de Pr&eacute;stamos</h1>
 
-Welcome to your new app Gestion de Pr&eacute;stamos.<br />
+Welcome to your new app Gestion de Pr&eacute;stamos.
+<br />
 
 
+<div class="container">
+    <div class="card shadow-lg">
+        <div class="card-header text-center">
+            <h5 class="card-title">Configuración de Balance General</h5>
+        </div>
+
+        <div class="card-body ">
+            <div class="buttons">
+                <button class="btn btn-primary" @onclick="AddAccount">Agregar Una Cuenta</button>
+                <button class="btn btn-danger" @onclick="DeleteAccount">Eliminar Cuenta</button>
+            </div>
+
+            <div class="balance-sheet">
+                @RenderBalanceSheet(Accounts)
+            </div>
+        </div>
+        @*footer*@
+        <div class="card-footer text-center mt-2">
+            <button class="btn btn-success">Guardar</button>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    public List<Account> Accounts { get; set; }
+    private Account? SelectedAccount { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Accounts = AccountData.GetAccounts();
+        base.OnInitialized();
+    }
+
+    private RenderFragment RenderBalanceSheet(List<Account> accounts)
+    {
+        return @<ul class="list-group">
+                    @foreach (var account in accounts)
+                    {
+                        <li class="list-group-item border-0">
+
+                            <button class="btn btn-link" @onclick="() => ToggleExpand(account)">
+                                @if (account.ChildAccounts.Any())
+                                {
+                                    <i class="@(account.IsExpanded ? "bi bi-dash-circle" : "bi bi-plus-circle")"></i>
+                                }
+                            </button>
+
+                            <span class="@(account == SelectedAccount ? "bg-warning" : "")"
+                                  @onclick="() => SelectAccount(account)">
+                                @account.Number @account.Name
+                            </span>
+                            @if (account.IsExpanded && account.ChildAccounts.Any())
+                        {
+                            @RenderBalanceSheet(account.ChildAccounts)
+                        }
+                        </li>
+                    }
+                </ul>;
+    }
+
+    private void ToggleExpand(Account account)
+    {
+        account.IsExpanded = !account.IsExpanded;
+    }
+
+    private void AddAccount()
+    {
+        if (SelectedAccount == null) return;
+
+        var parentAccount = SelectedAccount;
+        if (SelectedAccount.Deletable)
+        {
+            parentAccount = FindParentAccount(Accounts, SelectedAccount);
+        }
+
+        if (parentAccount == null) return;
+        var newAccount = new Account { Number = parentAccount.Number + 1, Name = "Nueva Subcuenta", Selectable = true, Deletable = true };
+        parentAccount.ChildAccounts.Add(newAccount);
+    }
+
+    private Account? FindParentAccount(List<Account> accounts, Account childAccount)
+    {
+        foreach (var account in accounts)
+        {
+            if (account.ChildAccounts.Contains(childAccount))
+            {
+                return account;
+            }
+
+            var parentAccount = FindParentAccount(account.ChildAccounts, childAccount);
+            if (parentAccount != null)
+            {
+                return parentAccount;
+            }
+        }
+
+        return null;
+    }
+
+    private void DeleteAccount()
+    {
+        if (SelectedAccount != null && SelectedAccount.Deletable)
+        {
+            RemoveAccount(Accounts, SelectedAccount);
+            SelectedAccount = null;
+        }
+    }
+
+    private bool RemoveAccount(List<Account> accounts, Account accountToRemove)
+    {
+        if (accounts.Remove(accountToRemove))
+        {
+            return true;
+        }
+
+        foreach (var account in accounts)
+        {
+            if (RemoveAccount(account.ChildAccounts, accountToRemove))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void SelectAccount(Account account)
+    {
+        if (!account.Selectable || account.ChildAccounts.Any()) return;
+        SelectedAccount = account;
+    }
+}

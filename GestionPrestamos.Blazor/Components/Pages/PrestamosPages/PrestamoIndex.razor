@@ -6,7 +6,7 @@
 <PageTitle>Registro de Prestamos</PageTitle>
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header space-between">
+        <div class="card-header d-flex justify-content-between">
             <h5 class="card-title">Registro de Prestamos</h5>
             <a href="/Prestamo/Create" class="btn btn-primary"> <span class="bi bi-plus-square mt-3"></span> Crear</a>
         </div>
@@ -75,9 +75,9 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer space-between">
-            <label>Cantidad:  @ListaPrestamos.Count()</label> 
-            <label>Total:  @ListaPrestamos.Sum(p => p.Monto)</label> 
+        <div class="card-footer d-flex justify-content-between">
+            <label><b>Cantidad:</b> @ListaPrestamos.Count()</label>
+            <label><b>Total:</b> @ListaPrestamos.Sum(p => p.Monto).ToString("N2")</label>
         </div>
     </div>
 </div>

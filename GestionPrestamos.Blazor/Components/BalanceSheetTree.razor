@@ -34,7 +34,7 @@
     [Parameter]
     public EventCallback<Account> OnAccountSelected { get; set; }
 
-    private void ToggleExpand(Account account)
+    private static void ToggleExpand(Account account)
     {
         account.IsExpanded = !account.IsExpanded;
     }

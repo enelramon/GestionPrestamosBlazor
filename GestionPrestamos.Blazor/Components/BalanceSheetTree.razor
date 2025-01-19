@@ -1,0 +1,41 @@
+﻿
+<ul>
+    @foreach (var account in Accounts)
+    {
+        <li>
+            <button @onclick="() => ToggleExpand(account)">
+                @if (account.ChildAccounts.Any())
+                {
+                    <i class="@(account.IsExpanded ? "bi bi-dash-circle" : "bi bi-plus-circle")"></i>
+                }
+            </button>
+            <span class="@(account.ChildAccounts.Any() ? "fw-bold" : "") @(account == SelectedAccount ? "bg-warning" : "")"
+                         @onclick="() => OnAccountSelected.InvokeAsync(account)">
+                @account.Number @account.Name
+            </span>
+
+            @if (account.IsExpanded && account.ChildAccounts.Any())
+            {
+                <BalanceSheetTree Accounts="account.ChildAccounts"
+                                  SelectedAccount="SelectedAccount"
+                                  OnAccountSelected="OnAccountSelected" />
+            }
+        </li>
+    }
+</ul>
+
+@code {
+    [Parameter]
+    public List<Account> Accounts { get; set; }
+
+    [Parameter]
+    public Account? SelectedAccount { get; set; }
+
+    [Parameter]
+    public EventCallback<Account> OnAccountSelected { get; set; }
+
+    private void ToggleExpand(Account account)
+    {
+        account.IsExpanded = !account.IsExpanded;
+    }
+}

@@ -53,3 +53,50 @@ h1:focus {
     display: flex !important;
     justify-content: space-between;
 }
+
+/*TREE VIEW*/
+.tree-container ul {
+    list-style: none;
+    padding-left: 20px;
+    position: relative;
+}
+
+.tree-container ul::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10px;
+    bottom: 0;
+    width: 1px;
+    background: #ccc;
+}
+
+.tree-container li {
+    position: relative;
+    padding: 5px 10px;
+}
+
+    .tree-container li::before {
+        content: "";
+        position: absolute;
+        top: 15px;
+        left: 0;
+        width: 10px;
+        height: 1px;
+        background: #ccc;
+    }
+
+    .tree-container li span {
+        cursor: pointer;
+    }
+
+    .tree-container li button {
+        background: none;
+        border: none;
+        margin-right: 5px;
+        color: #007bff;
+    }
+
+        .tree-container li button:hover {
+            color: #0056b3;
+        }

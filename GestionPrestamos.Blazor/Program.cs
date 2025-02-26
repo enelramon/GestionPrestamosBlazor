@@ -1,7 +1,10 @@
-using GestionPrestamos.Components;
-using GestionPrestamos.Context;
-using GestionPrestamos.Services;
-using Microsoft.EntityFrameworkCore;
+
+global using Microsoft.EntityFrameworkCore;
+global using GestionPrestamos.Models;
+global using GestionPrestamos.Components;
+global using GestionPrestamos.Context;
+global using GestionPrestamos.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 

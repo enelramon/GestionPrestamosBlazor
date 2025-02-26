@@ -9,20 +9,28 @@ namespace GestionPrestamos.Models;
 public partial class Prestamos
 {
     [Key]
-    public int PrestamoId { get; set; }
+    public int PrestamoId { get; set; } // No es requerido porque es autoincremental
 
-    [Required(ErrorMessage = "Este campo es requerido")]
+    [Required(ErrorMessage = "El campo Concepto es obligatorio.")]
     public string Concepto { get; set; } = null!;
 
-    [Range(1, double.MaxValue, ErrorMessage = "El monto no puede ser menor a 1")]
+    [Required(ErrorMessage = "El campo Monto es obligatorio.")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "El Monto debe ser mayor a 0.")]
     public double Monto { get; set; }
 
+    [Required(ErrorMessage = "El campo Balance es obligatorio.")]
+    [Range(0.01, double.MaxValue, ErrorMessage = "El Balance debe ser mayor a 0.")]
     public double Balance { get; set; }
 
-    [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un deudor válido")]
+    [Required(ErrorMessage = "El campo DeudorId es obligatorio.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Debe seleccionar un deudor válido.")]
     public int DeudorId { get; set; }
-    
+
     [ForeignKey("DeudorId")]
     [InverseProperty("Prestamos")]
     public virtual Deudores Deudor { get; set; } = null!;
+
+    [InverseProperty("Prestamo")]
+    public virtual ICollection<PrestamosDetalle> PrestamosDetalle { get; set; } = new List<PrestamosDetalle>();
+
 }

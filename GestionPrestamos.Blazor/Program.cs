@@ -4,26 +4,31 @@ global using GestionPrestamos.Models;
 global using GestionPrestamos.Components;
 global using GestionPrestamos.Context;
 global using GestionPrestamos.Services;
+global using GestionPrestamos.Controllers;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-//Inyeccion del contexto
+
 var ConStr = builder.Configuration.GetConnectionString("SqlConStr");
 //builder.Services.AddDbContext<Contexto>(o => o.UseSqlServer(ConStr));
 builder.Services.AddDbContextFactory<Contexto>(o => o.UseSqlServer(ConStr));
 
-//Inyeccion del service
+
 builder.Services.AddScoped<PrestamosService>();
 builder.Services.AddScoped<DeudoresService>();
 builder.Services.AddScoped<CobrosService>();
 
 // Inyeccion del servicio de Bootstrap
 builder.Services.AddBlazorBootstrap();
+
+
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -39,6 +44,9 @@ app.UseHttpsRedirection();
 
 
 app.UseAntiforgery();
+
+
+app.MapControllers();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()

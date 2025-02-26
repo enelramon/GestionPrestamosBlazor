@@ -17,7 +17,7 @@ namespace GestionPrestamos.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.10")
+                .HasAnnotation("ProductVersion", "9.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -127,6 +127,36 @@ namespace GestionPrestamos.Migrations
                     b.ToTable("Prestamos");
                 });
 
+            modelBuilder.Entity("PrestamosDetalle", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<double>("Balance")
+                        .HasColumnType("float");
+
+                    b.Property<int>("CuotaNo")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PrestamoId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Valor")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PrestamoId");
+
+                    b.ToTable("PrestamosDetalles");
+                });
+
             modelBuilder.Entity("GestionPrestamos.Models.Cobros", b =>
                 {
                     b.HasOne("GestionPrestamos.Models.Deudores", "Deudor")
@@ -154,10 +184,21 @@ namespace GestionPrestamos.Migrations
                     b.HasOne("GestionPrestamos.Models.Deudores", "Deudor")
                         .WithMany("Prestamos")
                         .HasForeignKey("DeudorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Deudor");
+                });
+
+            modelBuilder.Entity("PrestamosDetalle", b =>
+                {
+                    b.HasOne("GestionPrestamos.Models.Prestamos", "Prestamo")
+                        .WithMany("PrestamosDetalle")
+                        .HasForeignKey("PrestamoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Prestamo");
                 });
 
             modelBuilder.Entity("GestionPrestamos.Models.Cobros", b =>
@@ -170,6 +211,11 @@ namespace GestionPrestamos.Migrations
                     b.Navigation("Cobros");
 
                     b.Navigation("Prestamos");
+                });
+
+            modelBuilder.Entity("GestionPrestamos.Models.Prestamos", b =>
+                {
+                    b.Navigation("PrestamosDetalle");
                 });
 #pragma warning restore 612, 618
         }

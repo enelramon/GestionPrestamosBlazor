@@ -2,28 +2,28 @@
 
 @inject PrestamosService prestamosService
 @inject DeudoresService deudoresService
+@inject HttpClient httpClient
 @inject NavigationManager navigationManager
 @inject ToastService toastService
+@rendermode InteractiveServer
 
-@*HTML*@
-<PageTitle>Create</PageTitle>
+<PageTitle>Crear Préstamo</PageTitle>
+
 <EditForm Model="Prestamo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
-    
 
     <div class="container">
         <div class="card shadow-lg">
             <div class="card-header text-center">
-                <h5 class="card-title">Crear Prestamo</h5>
+                <h5 class="card-title">Crear Préstamo</h5>
             </div>
 
-            <div class="card-body ">
-    
-                @*Deudor*@
+            <div class="card-body">
+                @* Deudor *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Deudor</strong></label>
                     <InputSelect class="form-control form-select" @bind-Value="Prestamo.DeudorId">
-                        <option>Elija una opci&oacute;n</option>
+                        <option value="0">Seleccione un deudor</option>
                         @foreach (var deudor in ListaDeudores)
                         {
                             <option value="@deudor.DeudorId">@deudor.Nombres</option>
@@ -31,52 +31,143 @@
                     </InputSelect>
                     <ValidationMessage For="(() => Prestamo.DeudorId)" />
                 </div>
-                @*Concepto*@
+
+                @* Concepto *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Concepto</strong></label>
                     <InputText class="form-control" @bind-Value="Prestamo.Concepto"></InputText>
                     <ValidationMessage For="(() => Prestamo.Concepto)" />
                 </div>
-                @*Monto*@
+
+                @* Monto *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Monto</strong></label>
                     <InputNumber class="form-control" @bind-Value="Prestamo.Monto"></InputNumber>
                     <ValidationMessage For="(() => Prestamo.Monto)" />
                 </div>
+
+                @* Cantidad de Cuotas *@
+                <div class="mb-3">
+                    <label class="form-label"><strong>Cantidad de Cuotas</strong></label>
+                    <InputNumber class="form-control" @bind-Value="CantidadCuotas"></InputNumber>
+                    <ValidationMessage For="(() => CantidadCuotas)" />
+                </div>
+
+                @* Botón Calcular Cuotas *@
+                <button type="button" class="btn btn-info" @onclick="CalcularCuotas">Calcular Cuotas</button>
+
+                @* Tabla de cuotas *@
+                <div class="mt-3" style="display: @(PrestamoDetalles.Any() ? "block" : "none")">
+                    <h5>Detalles de Cuotas</h5>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Cuota No.</th>
+                                <th>Fecha</th>
+                                <th>Valor</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cuota in PrestamoDetalles)
+                            {
+                                <tr>
+                                    <td>@cuota.CuotaNo</td>
+                                    <td>@cuota.Fecha.ToShortDateString()</td>
+                                    <td>@cuota.Valor.ToString("C")</td>
+                                    <td>
+                                        <button type="button" class="btn btn-danger" @onclick="() => EliminarCuota(cuota)">Eliminar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            @*footer*@
             <div class="card-footer text-center mt-2">
-                <a href="/Prestamo/Index" class="btn btn-secondary"> <span class="bi bi-arrow-left"></span> Volver</a>
-                <button type="submit" class="btn btn-primary bi bi-floppy"> Guardar</button>
+                <a href="/Prestamo/Index" class="btn btn-secondary">Volver</a>
+                <button type="submit" class="btn btn-primary">Guardar</button>
             </div>
         </div>
     </div>
 </EditForm>
-@Mensaje
 
 @code {
     public Prestamos Prestamo { get; set; } = new Prestamos();
-    public string Mensaje { get; set; } = string.Empty;
     public List<Deudores> ListaDeudores { get; set; } = new List<Deudores>();
+    public List<PrestamosDetalle> PrestamoDetalles { get; set; } = new List<PrestamosDetalle>();
+    public int CantidadCuotas { get; set; } = 1;
 
     protected override async Task OnInitializedAsync()
     {
         ListaDeudores = await deudoresService.Listar(d => d.DeudorId > 0);
     }
 
+    public void CalcularCuotas()
+    {
+        if (Prestamo.Monto <= 0 || CantidadCuotas <= 0)
+        {
+            toastService.ShowWarning("Ingrese un monto y cantidad de cuotas válidos.");
+            return;
+        }
+
+        PrestamoDetalles.Clear();
+        double valorCuota = Prestamo.Monto / CantidadCuotas;
+
+        for (int i = 1; i <= CantidadCuotas; i++)
+        {
+            PrestamoDetalles.Add(new PrestamosDetalle
+                {
+                    CuotaNo = i,
+                    Fecha = DateTime.Now.AddMonths(i),
+                    Valor = Math.Round(valorCuota, 2),
+                    Balance = 0 // 🔹 Balance en 0 para que no afecte el préstamo
+                });
+        }
+    }
+
     public async Task Guardar()
     {
-        var creado = await prestamosService.Guardar(Prestamo);
+        if (Prestamo.DeudorId == 0 || Prestamo.Monto <= 0 || CantidadCuotas <= 0)
+        {
+            toastService.ShowError("Por favor complete todos los campos antes de guardar.");
+            return;
+        }
 
-        if (creado)
+        var guardado = await prestamosService.Guardar(Prestamo);
+        if (!guardado)
         {
-            toastService.ShowSuccess("Cobro Guardado Correctamente");
-            navigationManager.NavigateTo("/Prestamo/Index");
+            toastService.ShowError("Error al guardar el préstamo.");
+            return;
         }
-        else
+
+        var prestamoGuardado = await prestamosService.Buscar(Prestamo.PrestamoId);
+        if (prestamoGuardado == null)
         {
-            toastService.ShowError("No se pudo guardar correctamente");
+            toastService.ShowError("No se pudo recuperar el préstamo guardado.");
+            return;
         }
+
+        // ✅ Se guardan las cuotas sin modificar el balance del préstamo
+        foreach (var cuota in PrestamoDetalles)
+        {
+            cuota.PrestamoId = prestamoGuardado.PrestamoId;
+
+            var detalleResponse = await httpClient.PostAsJsonAsync("api/PrestamosDetalles", cuota);
+            if (!detalleResponse.IsSuccessStatusCode)
+            {
+                toastService.ShowError($"Error al guardar la cuota {cuota.CuotaNo}");
+                return;
+            }
+        }
+
+        toastService.ShowSuccess("Préstamo y cuotas guardados correctamente");
+        navigationManager.NavigateTo("/Prestamo/Index");
+    }
+
+    public void EliminarCuota(PrestamosDetalle cuota)
+    {
+        PrestamoDetalles.Remove(cuota);
     }
 }

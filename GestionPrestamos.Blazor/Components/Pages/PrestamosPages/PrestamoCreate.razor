@@ -114,7 +114,7 @@
 
         PrestamoDetalles.Clear();
         double valorCuota = Prestamo.Monto / CantidadCuotas;
-
+        // Aquí no modificamos el balance en cada cuota, dejamos el campo en 0.
         for (int i = 1; i <= CantidadCuotas; i++)
         {
             PrestamoDetalles.Add(new PrestamosDetalle
@@ -122,19 +122,21 @@
                     CuotaNo = i,
                     Fecha = DateTime.Now.AddMonths(i),
                     Valor = Math.Round(valorCuota, 2),
-                    Balance = 0 // 🔹 Balance en 0 para que no afecte el préstamo
+                    Balance = 0 // Dejamos Balance en 0, ya que en Create no se conecta con el Balance del préstamo
                 });
         }
     }
 
     public async Task Guardar()
     {
+        // Validación básica
         if (Prestamo.DeudorId == 0 || Prestamo.Monto <= 0 || CantidadCuotas <= 0)
         {
             toastService.ShowError("Por favor complete todos los campos antes de guardar.");
             return;
         }
 
+        // Guardamos el préstamo utilizando el service (que no utiliza API)
         var guardado = await prestamosService.Guardar(Prestamo);
         if (!guardado)
         {
@@ -142,18 +144,21 @@
             return;
         }
 
-        var prestamoGuardado = await prestamosService.Buscar(Prestamo.PrestamoId);
-        if (prestamoGuardado == null)
+        // Debido a que el objeto Prestamo podría no tener actualizado su PrestamoId,
+        // se recomienda reconsultar el último préstamo insertado filtrando por propiedades únicas.
+        // Por ejemplo, si el concepto y monto son únicos en este contexto:
+        var lista = await prestamosService.GetList(p => p.Concepto == Prestamo.Concepto && p.Monto == Prestamo.Monto);
+        if (!lista.Any())
         {
             toastService.ShowError("No se pudo recuperar el préstamo guardado.");
             return;
         }
+        var prestamoGuardado = lista.OrderByDescending(p => p.PrestamoId).First();
 
-        // ✅ Se guardan las cuotas sin modificar el balance del préstamo
+        // Asignamos el PrestamoId obtenido a cada cuota
         foreach (var cuota in PrestamoDetalles)
         {
             cuota.PrestamoId = prestamoGuardado.PrestamoId;
-
             var detalleResponse = await httpClient.PostAsJsonAsync("api/PrestamosDetalles", cuota);
             if (!detalleResponse.IsSuccessStatusCode)
             {
@@ -162,7 +167,7 @@
             }
         }
 
-        toastService.ShowSuccess("Préstamo y cuotas guardados correctamente");
+        toastService.ShowSuccess("Préstamo y cuotas guardados correctamente.");
         navigationManager.NavigateTo("/Prestamo/Index");
     }
 

@@ -31,14 +31,12 @@
                     </InputSelect>
                     <ValidationMessage For="(() => Prestamo.DeudorId)" />
                 </div>
-
                 @* Concepto *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Concepto</strong></label>
                     <InputText class="form-control" @bind-Value="Prestamo.Concepto"></InputText>
                     <ValidationMessage For="(() => Prestamo.Concepto)" />
                 </div>
-
                 @* Monto *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Monto</strong></label>
@@ -63,8 +61,12 @@
                             {
                                 <tr>
                                     <td>@cuota.CuotaNo</td>
-                                    <td><InputDate class="form-control" @bind-Value="cuota.Fecha"></InputDate></td>
-                                    <td><InputNumber class="form-control" @bind-Value="cuota.Valor"></InputNumber></td>
+                                    <td>
+                                        <InputDate class="form-control" @bind-Value="cuota.Fecha" />
+                                    </td>
+                                    <td>
+                                        <InputNumber class="form-control" @bind-Value="cuota.Valor" />
+                                    </td>
                                     <td>
                                         <button type="button" class="btn btn-danger" @onclick="() => EliminarCuota(cuota)">Eliminar</button>
                                     </td>
@@ -100,8 +102,8 @@
         Prestamo = await prestamosService.Buscar(PrestamoId);
         ListaDeudores = await deudoresService.Listar(d => d.DeudorId > 0);
 
-        // Cargar los detalles del préstamo
-        var detallesResponse = await httpClient.GetFromJsonAsync<List<PrestamosDetalle>>($"api/PrestamosDetalles/{PrestamoId}");
+        // Usamos el endpoint "byPrestamo" para obtener todos los detalles asociados al préstamo
+        var detallesResponse = await httpClient.GetFromJsonAsync<List<PrestamosDetalle>>($"api/PrestamosDetalles/byPrestamo/{PrestamoId}");
         if (detallesResponse != null)
         {
             PrestamoDetalles = detallesResponse;
@@ -110,6 +112,7 @@
 
     public async Task Modificar()
     {
+        // Actualizar el préstamo
         var modificado = await prestamosService.Guardar(Prestamo);
         if (!modificado)
         {
@@ -117,9 +120,15 @@
             return;
         }
 
+        // Actualizar cada cuota
         foreach (var cuota in PrestamoDetalles)
         {
-            await httpClient.PutAsJsonAsync($"api/PrestamosDetalles/{cuota.Id}", cuota);
+            var response = await httpClient.PutAsJsonAsync($"api/PrestamosDetalles/{cuota.Id}", cuota);
+            if (!response.IsSuccessStatusCode)
+            {
+                toastService.ShowError($"Error al modificar la cuota {cuota.CuotaNo}");
+                return;
+            }
         }
 
         toastService.ShowSuccess("Préstamo modificado correctamente.");

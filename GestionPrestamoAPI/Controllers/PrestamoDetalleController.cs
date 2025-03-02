@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ModelosPrestamo;
 
-
 namespace GestionPrestamos.Controllers
 {
     [Route("api/[controller]")]
@@ -20,14 +19,14 @@ namespace GestionPrestamos.Controllers
             _context = context;
         }
 
-       
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PrestamosDetalle>>> GetAllPrestamosDetalles()
         {
-            return await _context.PrestamosDetalles.Include(pd => pd.Prestamo).ToListAsync();
+            return await _context.PrestamosDetalles
+                                 .Include(pd => pd.Prestamo)
+                                 .ToListAsync();
         }
 
-       
         [HttpGet("{id}")]
         public async Task<ActionResult<PrestamosDetalle>> GetPrestamoDetalle(int id)
         {
@@ -41,6 +40,22 @@ namespace GestionPrestamos.Controllers
             }
 
             return prestamoDetalle;
+        }
+
+        // Nuevo endpoint: devuelve todos los detalles para un Prestamo específico
+        [HttpGet("byPrestamo/{prestamoId}")]
+        public async Task<ActionResult<IEnumerable<PrestamosDetalle>>> GetDetallesByPrestamoId(int prestamoId)
+        {
+            var detalles = await _context.PrestamosDetalles
+                                         .Include(pd => pd.Prestamo)
+                                         .Where(pd => pd.PrestamoId == prestamoId)
+                                         .ToListAsync();
+            if (detalles == null || !detalles.Any())
+            {
+                return NotFound();
+            }
+
+            return detalles;
         }
 
         [HttpPost]
@@ -57,10 +72,8 @@ namespace GestionPrestamos.Controllers
                 return BadRequest("El préstamo asociado no existe.");
             }
 
-           
             _context.PrestamosDetalles.Add(prestamoDetalle);
 
-            
             prestamo.Balance -= prestamoDetalle.Valor;
             _context.Prestamos.Update(prestamo);
 
@@ -68,7 +81,6 @@ namespace GestionPrestamos.Controllers
 
             return CreatedAtAction(nameof(GetPrestamoDetalle), new { id = prestamoDetalle.Id }, prestamoDetalle);
         }
-
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutPrestamoDetalle(int id, PrestamosDetalle prestamoDetalle)

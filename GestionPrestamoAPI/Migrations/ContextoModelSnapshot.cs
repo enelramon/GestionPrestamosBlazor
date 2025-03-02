@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace GestionPrestamos.Migrations
+namespace GestionPrestamoAPI.Migrations
 {
     [DbContext(typeof(Contexto))]
     partial class ContextoModelSnapshot : ModelSnapshot
@@ -22,7 +22,7 @@ namespace GestionPrestamos.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("GestionPrestamos.Models.Cobros", b =>
+            modelBuilder.Entity("ModelosPrestamo.Cobros", b =>
                 {
                     b.Property<int>("CobroId")
                         .ValueGeneratedOnAdd()
@@ -46,7 +46,7 @@ namespace GestionPrestamos.Migrations
                     b.ToTable("Cobros");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.CobrosDetalle", b =>
+            modelBuilder.Entity("ModelosPrestamo.CobrosDetalle", b =>
                 {
                     b.Property<int>("DetalleId")
                         .ValueGeneratedOnAdd()
@@ -70,7 +70,7 @@ namespace GestionPrestamos.Migrations
                     b.ToTable("CobrosDetalle");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Deudores", b =>
+            modelBuilder.Entity("ModelosPrestamo.Deudores", b =>
                 {
                     b.Property<int>("DeudorId")
                         .ValueGeneratedOnAdd()
@@ -99,7 +99,7 @@ namespace GestionPrestamos.Migrations
                         });
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Prestamos", b =>
+            modelBuilder.Entity("ModelosPrestamo.Prestamos", b =>
                 {
                     b.Property<int>("PrestamoId")
                         .ValueGeneratedOnAdd()
@@ -157,9 +157,9 @@ namespace GestionPrestamos.Migrations
                     b.ToTable("PrestamosDetalles");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Cobros", b =>
+            modelBuilder.Entity("ModelosPrestamo.Cobros", b =>
                 {
-                    b.HasOne("GestionPrestamos.Models.Deudores", "Deudor")
+                    b.HasOne("ModelosPrestamo.Deudores", "Deudor")
                         .WithMany("Cobros")
                         .HasForeignKey("DeudorId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -168,9 +168,9 @@ namespace GestionPrestamos.Migrations
                     b.Navigation("Deudor");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.CobrosDetalle", b =>
+            modelBuilder.Entity("ModelosPrestamo.CobrosDetalle", b =>
                 {
-                    b.HasOne("GestionPrestamos.Models.Cobros", "Cobro")
+                    b.HasOne("ModelosPrestamo.Cobros", "Cobro")
                         .WithMany("CobrosDetalle")
                         .HasForeignKey("CobroId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -179,9 +179,9 @@ namespace GestionPrestamos.Migrations
                     b.Navigation("Cobro");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Prestamos", b =>
+            modelBuilder.Entity("ModelosPrestamo.Prestamos", b =>
                 {
-                    b.HasOne("GestionPrestamos.Models.Deudores", "Deudor")
+                    b.HasOne("ModelosPrestamo.Deudores", "Deudor")
                         .WithMany("Prestamos")
                         .HasForeignKey("DeudorId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -192,7 +192,7 @@ namespace GestionPrestamos.Migrations
 
             modelBuilder.Entity("PrestamosDetalle", b =>
                 {
-                    b.HasOne("GestionPrestamos.Models.Prestamos", "Prestamo")
+                    b.HasOne("ModelosPrestamo.Prestamos", "Prestamo")
                         .WithMany("PrestamosDetalle")
                         .HasForeignKey("PrestamoId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -201,19 +201,19 @@ namespace GestionPrestamos.Migrations
                     b.Navigation("Prestamo");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Cobros", b =>
+            modelBuilder.Entity("ModelosPrestamo.Cobros", b =>
                 {
                     b.Navigation("CobrosDetalle");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Deudores", b =>
+            modelBuilder.Entity("ModelosPrestamo.Deudores", b =>
                 {
                     b.Navigation("Cobros");
 
                     b.Navigation("Prestamos");
                 });
 
-            modelBuilder.Entity("GestionPrestamos.Models.Prestamos", b =>
+            modelBuilder.Entity("ModelosPrestamo.Prestamos", b =>
                 {
                     b.Navigation("PrestamosDetalle");
                 });

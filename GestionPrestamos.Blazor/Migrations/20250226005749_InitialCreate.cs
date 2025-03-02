@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GestionPrestamos.Migrations
 {
     /// <inheritdoc />
-    public partial class inicial : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -66,7 +66,7 @@ namespace GestionPrestamos.Migrations
                         column: x => x.DeudorId,
                         principalTable: "Deudores",
                         principalColumn: "DeudorId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -87,6 +87,29 @@ namespace GestionPrestamos.Migrations
                         column: x => x.CobroId,
                         principalTable: "Cobros",
                         principalColumn: "CobroId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PrestamosDetalles",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CuotaNo = table.Column<int>(type: "int", nullable: false),
+                    Fecha = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    Valor = table.Column<double>(type: "float", nullable: false),
+                    Balance = table.Column<double>(type: "float", nullable: false),
+                    PrestamoId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PrestamosDetalles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_PrestamosDetalles_Prestamos_PrestamoId",
+                        column: x => x.PrestamoId,
+                        principalTable: "Prestamos",
+                        principalColumn: "PrestamoId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -113,6 +136,11 @@ namespace GestionPrestamos.Migrations
                 name: "IX_Prestamos_DeudorId",
                 table: "Prestamos",
                 column: "DeudorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PrestamosDetalles_PrestamoId",
+                table: "PrestamosDetalles",
+                column: "PrestamoId");
         }
 
         /// <inheritdoc />
@@ -122,10 +150,13 @@ namespace GestionPrestamos.Migrations
                 name: "CobrosDetalle");
 
             migrationBuilder.DropTable(
-                name: "Prestamos");
+                name: "PrestamosDetalles");
 
             migrationBuilder.DropTable(
                 name: "Cobros");
+
+            migrationBuilder.DropTable(
+                name: "Prestamos");
 
             migrationBuilder.DropTable(
                 name: "Deudores");

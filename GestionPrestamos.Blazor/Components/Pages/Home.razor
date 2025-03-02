@@ -1,8 +1,35 @@
 ﻿@page "/"
-
+@inject HttpClient httpClient
 <PageTitle>Gestion de Pr&eacute;stamos</PageTitle>
 
 <h1>Gestion de Pr&eacute;stamos</h1>
 
 Welcome to your new app Gestion de Pr&eacute;stamos.
 <br />
+
+
+
+@code {
+    private string apiResponse = "Esperando respuesta...";
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var response = await httpClient.GetAsync("api/PrestamosDetalles");
+            if (response.IsSuccessStatusCode)
+            {
+                apiResponse = "Conexión exitosa con la API";
+            }
+            else
+            {
+                apiResponse = $"Error en la API: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            apiResponse = $"Excepción: {ex.Message}";
+        }
+    }
+}
+<p>@apiResponse</p>

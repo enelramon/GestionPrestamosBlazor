@@ -1,5 +1,6 @@
-﻿using GestionPrestamos.Models;
+﻿
 using Microsoft.EntityFrameworkCore;
+using ModelosPrestamo;
 
 namespace GestionPrestamos.Context;
 

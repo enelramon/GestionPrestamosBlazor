@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Microsoft.EntityFrameworkCore;
 
-namespace GestionPrestamos.Models;
+
+namespace ModelosPrestamo;
 
 public partial class Prestamos
 {
@@ -18,7 +18,7 @@ public partial class Prestamos
     [Range(0.01, double.MaxValue, ErrorMessage = "El Monto debe ser mayor a 0.")]
     public double Monto { get; set; }
 
-  
+   
     public double Balance { get; set; }
 
     [Required(ErrorMessage = "El campo DeudorId es obligatorio.")]

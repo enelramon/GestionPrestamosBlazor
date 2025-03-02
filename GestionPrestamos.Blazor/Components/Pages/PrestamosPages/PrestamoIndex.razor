@@ -1,72 +1,44 @@
 ﻿@page "/Prestamo/Index"
 
 @inject PrestamosService prestamosService
+@inject HttpClient httpClient
 @inject NavigationManager navigationManager
 
-<PageTitle>Registro de Prestamos</PageTitle>
+<PageTitle>Registro de Préstamos</PageTitle>
+
 <div class="container">
     <div class="card shadow-lg">
         <div class="card-header space-between">
-            <h5 class="card-title">Registro de Prestamos</h5>
-            <a href="/Prestamo/Create" class="btn btn-primary"> <span class="bi bi-plus-square mt-3"></span> Crear</a>
+            <h5 class="card-title">Registro de Préstamos</h5>
+            <a href="/Prestamo/Create" class="btn btn-primary">
+                <span class="bi bi-plus-square mt-3"></span> Crear
+            </a>
         </div>
 
         <div class="card-body">
-
-            @*labels*@
-            <div class="row">
-
-                @*Filtrar por*@
-                <div class="col-3">
-                    <label class="col-form-label"><strong>Filtrar por</strong></label>
-                </div>
-
-                @*ValorFiltro*@
-                <div class="col-4">
-                    <label class="col-form-label"><strong>B&uacute;squeda</strong></label>
-                </div>
-            </div>
-
-            @*Inputs y botones*@
-            <div class="row align-items-center">
-                @*filtro*@
-                <div class="col-3">
-                    <InputSelect class="form-select" @bind-Value="Filtro">
-                        <option value="" selected disabled>Elija una opci&oacute;n</option>
-                        <option value="Deudor">Deudor</option>
-                        <option value="Concepto">Concepto</option>
-                    </InputSelect>
-                </div>
-
-                @*Busqueda*@
-                <div class="col-4">
-                    <div class="input-group">
-                        <input class="form-control" @bind="ValorFiltro" placeholder="Buscar" />
-                        <button type="button" class="btn btn-outline-primary bi bi-search" @onclick="Buscar"></button>
-                    </div>
-                </div>
-
-                </div>
-
             <table class="table table-hover">
-                <thead class="table  table-striped text-black">
+                <thead>
                     <tr>
                         <th>PrestamoId</th>
                         <th>Deudor</th>
                         <th>Concepto</th>
-                        <th>Monto</th> 
+                        <th>Monto</th>
+                        <th>Número de Cuotas</th>
+                        <th>Balance</th>
                         <th>Opciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var prestamo in ListaPrestamos)
+                    @foreach (var prestamo in ListaPrestamos)
                     {
+                        var numeroCuotas = CuotasPorPrestamo.ContainsKey(prestamo.PrestamoId) ? CuotasPorPrestamo[prestamo.PrestamoId] : 0;
                         <tr>
-                            <td> @prestamo.PrestamoId</td>
-                            <td> @prestamo.Deudor.Nombres</td>
-                            <td> @prestamo.Concepto</td>
-                            <td> @prestamo.Monto</td>
-                            
+                            <td>@prestamo.PrestamoId</td>
+                            <td>@prestamo.Deudor.Nombres</td>
+                            <td>@prestamo.Concepto</td>
+                            <td>@prestamo.Monto.ToString("C")</td>
+                            <td>@numeroCuotas</td>
+                            <td>@prestamo.Balance.ToString("C")</td>
                             <td class="text-center">
                                 <a href="/Prestamo/Edit/@prestamo.PrestamoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
                             </td>
@@ -75,45 +47,46 @@
                 </tbody>
             </table>
         </div>
+
         <div class="card-footer space-between">
-            <label>Cantidad:  @ListaPrestamos.Count()</label> 
-            <label>Total:  @ListaPrestamos.Sum(p => p.Monto)</label> 
+            <label>Cantidad: @ListaPrestamos.Count()</label>
+            <label>Total: @ListaPrestamos.Sum(p => p.Monto).ToString("C")</label>
         </div>
     </div>
 </div>
 
 @code {
-
-    public List<Prestamos> ListaPrestamos { get; set; } = new List<Prestamos>();
-
-    public string Filtro { get; set; } = string.Empty;
-    public string ValorFiltro { get; set; } = string.Empty;
+    public List<Prestamos> ListaPrestamos { get; set; } = new();
+    public Dictionary<int, int> CuotasPorPrestamo { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
+        await CargarPrestamos();
+        await CargarCuotasPorPrestamo();
+    }
+
+    private async Task CargarPrestamos()
+    {
+        // Se usa PrestamosService en lugar de la API
         ListaPrestamos = await prestamosService.GetList(p => p.PrestamoId > 0);
     }
 
-    private async Task Buscar()
+    private async Task CargarCuotasPorPrestamo()
     {
-        if (ValorFiltro.Trim() != "")
+        try
         {
-            if (Filtro == "Deudor")
+            var prestamosDetalles = await httpClient.GetFromJsonAsync<List<PrestamosDetalle>>("api/PrestamosDetalles");
+
+            if (prestamosDetalles != null)
             {
-                ListaPrestamos = await prestamosService.GetList(p => p.Deudor.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
-            }
-            else if (Filtro == "Concepto")
-            {
-                ListaPrestamos = await prestamosService.GetList(p => p.Concepto.ToLower().Contains(ValorFiltro.ToLower()));
+                CuotasPorPrestamo = prestamosDetalles
+                    .GroupBy(pd => pd.PrestamoId)
+                    .ToDictionary(g => g.Key, g => g.Count()); // Se cuenta la cantidad de cuotas por préstamo
             }
         }
-        else
-            ListaPrestamos = await prestamosService.GetList(p => p.PrestamoId > 0);
-    }
-    private async Task Restablecer()
-    {
-        ListaPrestamos = await prestamosService.GetList(e => e.PrestamoId > 0);
-        Filtro = string.Empty;
-        ValorFiltro = string.Empty;
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error al obtener detalles de préstamos: {ex.Message}");
+        }
     }
 }

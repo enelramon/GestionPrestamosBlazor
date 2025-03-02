@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 public class PrestamosDetalle
 {
     [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public int Id { get; set; }
 
     [Required(ErrorMessage = "El número de cuota es obligatorio.")]
@@ -19,8 +20,7 @@ public class PrestamosDetalle
     [Range(0.01, double.MaxValue, ErrorMessage = "El valor debe ser mayor a 0.")]
     public double Valor { get; set; }
 
-    [Required(ErrorMessage = "El balance es obligatorio.")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "El balance debe ser mayor a 0.")]
+  
     public double Balance { get; set; }
 
     [Required(ErrorMessage = "El ID del préstamo es obligatorio.")]
@@ -28,4 +28,6 @@ public class PrestamosDetalle
 
     [ForeignKey("PrestamoId")]
     public virtual Prestamos Prestamo { get; set; }
+
+
 }

@@ -18,8 +18,7 @@ public partial class Prestamos
     [Range(0.01, double.MaxValue, ErrorMessage = "El Monto debe ser mayor a 0.")]
     public double Monto { get; set; }
 
-    [Required(ErrorMessage = "El campo Balance es obligatorio.")]
-    [Range(0.01, double.MaxValue, ErrorMessage = "El Balance debe ser mayor a 0.")]
+  
     public double Balance { get; set; }
 
     [Required(ErrorMessage = "El campo DeudorId es obligatorio.")]

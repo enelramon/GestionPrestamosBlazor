@@ -7,7 +7,7 @@
 <PageTitle>Index</PageTitle>
 <div class="container">
     <div class="card shadow-lg">
-        <div class="card-header space-between">
+        <div class="card-header d-flex justify-content-between align-center mb-4">
             <h5 class="card-title">Registro Cobros</h5>
             <a href="/Cobros/Create" class="btn btn-primary">
                 <span class="bi bi-plus-square mt-3"></span> Crear
@@ -108,7 +108,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer space-between">
+        <div class="card-footer d-flex justify-content-between align-center mb-4">
             <label class="ms-3"><strong>Cantidad:</strong> @ListaCobros.Count</label>
             <div class="col-5">
                 <label class="ms-5"><strong>Total:</strong> $@ListaCobros.Sum(p => p.Monto).ToString("N2")</label>

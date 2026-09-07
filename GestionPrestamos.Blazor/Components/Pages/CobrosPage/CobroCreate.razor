@@ -119,7 +119,7 @@
     protected override async Task OnInitializedAsync()
     {
         ListaDeudores = await deudoresService
-            .Listar(d => true);
+            .GetList(d => true);
         Cobro.Fecha = DateTime.Now;
     }
     public async Task BuscarPrestamosPendientes()

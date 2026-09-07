@@ -67,7 +67,7 @@
     protected override async Task OnInitializedAsync()
     {
         Prestamo = await prestamosService.Buscar(PrestamoId);
-        ListaDeudores = await deudoresService.Listar(d => d.DeudorId > 0);
+        ListaDeudores = await deudoresService.GetList(d => d.DeudorId > 0);
 
     }
 

@@ -91,7 +91,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var prestamosResult = await prestamosService.GetList(p => p.PrestamoId > 0);
+        var prestamosResult = await prestamosService.GetList(p => true);
         prestamosResult.OnSuccess(prestamos => ListaPrestamos = prestamos);
     }
 

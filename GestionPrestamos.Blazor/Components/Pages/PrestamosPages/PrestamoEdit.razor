@@ -69,7 +69,7 @@
         var result = await prestamosService.Buscar(PrestamoId);
         result.OnSuccess(prestamo => Prestamo = prestamo ?? new Prestamos());
 
-        ListaDeudores = await deudoresService.GetList(d => d.DeudorId > 0);
+        ListaDeudores = await deudoresService.GetList(d => true);
     }
 
     public async Task Modificar()

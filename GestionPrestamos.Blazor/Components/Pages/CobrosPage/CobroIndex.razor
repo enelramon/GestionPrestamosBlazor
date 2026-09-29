@@ -129,7 +129,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListaCobros = await cobroService.Listar(c => c.CobroId > 0);
+        ListaCobros = await cobroService.Listar(c => true);
         Desde = null;
         Hasta = null;
     }
@@ -148,7 +148,7 @@
     }
     private async Task Restablecer()
     {
-        ListaCobros = await cobroService.Listar(e => e.CobroId > 0);
+        ListaCobros = await cobroService.Listar(e => true);
         Filtro = string.Empty;
         ValorFiltro = string.Empty;
         Desde = null;

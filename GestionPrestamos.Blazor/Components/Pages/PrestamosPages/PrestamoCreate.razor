@@ -62,7 +62,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListaDeudores = await deudoresService.GetList(d => d.DeudorId > 0);
+        ListaDeudores = await deudoresService.GetList(d => true);
     }
 
     public async Task Guardar()

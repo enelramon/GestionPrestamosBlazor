@@ -1,4 +1,5 @@
 ﻿@page "/Prestamo/Index"
+@using System.Linq.Expressions
 
 @inject PrestamosService prestamosService
 
@@ -45,7 +46,7 @@
                     </div>
                 </div>
 
-                </div>
+            </div>
 
             <table class="table table-hover">
                 <thead class="table  table-striped text-black">
@@ -53,19 +54,19 @@
                         <th>PrestamoId</th>
                         <th>Deudor</th>
                         <th>Concepto</th>
-                        <th>Monto</th> 
+                        <th>Monto</th>
                         <th>Opciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach(var prestamo in ListaPrestamos)
+                    @foreach (var prestamo in ListaPrestamos)
                     {
                         <tr>
                             <td> @prestamo.PrestamoId</td>
                             <td> @prestamo.Deudor.Nombres</td>
                             <td> @prestamo.Concepto</td>
                             <td> @prestamo.Monto</td>
-                            
+
                             <td class="text-center">
                                 <a href="/Prestamo/Edit/@prestamo.PrestamoId" class="btn btn-outline-primary bi bi-pencil-square"></a>
                             </td>
@@ -75,8 +76,8 @@
             </table>
         </div>
         <div class="card-footer d-flex justify-content-between align-center mb-4">
-            <label>Cantidad:  @ListaPrestamos.Count()</label> 
-            <label>Total:  @ListaPrestamos.Sum(p => p.Monto)</label> 
+            <label>Cantidad:  @ListaPrestamos.Count()</label>
+            <label>Total:  @ListaPrestamos.Sum(p => p.Monto)</label>
         </div>
     </div>
 </div>
@@ -90,29 +91,24 @@
 
     protected override async Task OnInitializedAsync()
     {
-        ListaPrestamos = await prestamosService.GetList(p => p.PrestamoId > 0);
+        var prestamosResult = await prestamosService.GetList(p => p.PrestamoId > 0);
+        prestamosResult.OnSuccess(prestamos => ListaPrestamos = prestamos);
     }
 
     private async Task Buscar()
     {
+        Expression<Func<Prestamos, bool>> criterio = p => true;
         if (ValorFiltro.Trim() != "")
         {
-            if (Filtro == "Deudor")
+            criterio = Filtro switch
             {
-                ListaPrestamos = await prestamosService.GetList(p => p.Deudor.Nombres.ToLower().Contains(ValorFiltro.ToLower()));
-            }
-            else if (Filtro == "Concepto")
-            {
-                ListaPrestamos = await prestamosService.GetList(p => p.Concepto.ToLower().Contains(ValorFiltro.ToLower()));
-            }
-        }
-        else
-            ListaPrestamos = await prestamosService.GetList(p => p.PrestamoId > 0);
-    }
-    private async Task Restablecer()
-    {
-        ListaPrestamos = await prestamosService.GetList(e => e.PrestamoId > 0);
-        Filtro = string.Empty;
-        ValorFiltro = string.Empty;
+                "Deudor" => p => p.Deudor.Nombres.ToLower().Contains(ValorFiltro.ToLower()),
+                "Concepto" => p => p.Concepto.ToLower().Contains(ValorFiltro.ToLower()),
+                _ => p => true
+            };
+        } 
+
+        var result = await prestamosService.GetList( criterio);
+        result.OnSuccess(prestamos => ListaPrestamos = prestamos);
     }
 }

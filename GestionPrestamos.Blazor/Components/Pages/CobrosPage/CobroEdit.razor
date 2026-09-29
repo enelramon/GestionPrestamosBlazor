@@ -32,7 +32,7 @@
                 @* Deudor *@
                 <div class="mb-3">
                     <label class="form-label"><strong>Deudor</strong></label>
-                    <input class="form-control" value="@Deudor.Nombres" readonly/>                   
+                    <input class="form-control" value="@Deudor.Nombres" readonly />
                 </div>
 
                 @* Detalles del Cobro *@
@@ -53,13 +53,14 @@
                             </tr>
                         </thead>
                         <tbody class="text-center">
-                            @foreach (var detalle in Cobro.CobrosDetalle) {
+                            @foreach (var detalle in Cobro.CobrosDetalle)
+                            {
                                 <tr>
                                     <th>@detalle.PrestamoId</th>
                                     <th>@detalle.ValorCobrado</th>
                                     <th>
                                         <button type="button" class="btn btn-outline-danger bi bi-trash"
-                                            @onclick="() => RemoverDetalle(detalle)">
+                                                @onclick="() => RemoverDetalle(detalle)">
                                         </button>
                                     </th>
                                 </tr>
@@ -92,7 +93,7 @@
 
 
 @code {
-    [Parameter] 
+    [Parameter]
     public int CobroId { get; set; }
     public Cobros Cobro { get; set; } = new Cobros();
     public CobrosDetalle DetalleSeleccionado { get; set; } = new();
@@ -101,24 +102,29 @@
 
     public string Mensaje = string.Empty;
 
-    protected override async Task OnInitializedAsync() {
-        Cobro = await cobroService.Buscar(CobroId);
-        Deudor = await deudoresService.Buscar(Cobro.DeudorId);
+    protected override async Task OnInitializedAsync()
+    {
+        Cobro = await cobroService.Buscar(CobroId)?? new Cobros();
+        Deudor = await deudoresService.Buscar(Cobro.DeudorId) ?? new Deudores();
 
         Cobro.Fecha = DateTime.Now;
-        ListaPrestamos = await prestamosService
+        var result = await prestamosService
             .GetList(p => p.DeudorId == Cobro.DeudorId);
+        result.OnSuccess(p => ListaPrestamos = p);
     }
-    public async Task BuscarPrestamosPendientes() {
+    public async Task BuscarPrestamosPendientes()
+    {
         ListaPrestamos = await prestamosService
             .GetPrestamosPendientes(Cobro.DeudorId);
     }
 
-    private async Task HandlePrestamoSelected((Prestamos prestamo, double valor) selection) {
-        var detalle = new CobrosDetalle {
-                PrestamoId = selection.prestamo.PrestamoId,
-                ValorCobrado = selection.valor
-            };
+    private async Task HandlePrestamoSelected((Prestamos prestamo, double valor) selection)
+    {
+        var detalle = new CobrosDetalle
+        {
+            PrestamoId = selection.prestamo.PrestamoId,
+            ValorCobrado = selection.valor
+        };
 
         Cobro.CobrosDetalle.Add(detalle);
         Cobro.Monto = Cobro.CobrosDetalle.Sum(d => d.ValorCobrado);
@@ -127,21 +133,24 @@
         await Task.CompletedTask;
     }
 
-    public async Task Modificar() {
+    public async Task Modificar()
+    {
         var paso = await cobroService.Guardar(Cobro);
 
-        if (paso) {
-            toastService.ShowSuccess( "Se ha modificado correctamente");
+        if (paso)
+        {
+            toastService.ShowSuccess("Se ha modificado correctamente");
             navigationManager.NavigateTo("/Cobro/Index");
         }
-        else {
-            toastService.ShowError( "No se ha podido modificar correctamente");
+        else
+        {
+            toastService.ShowError("No se ha podido modificar correctamente");
         }
     }
 
-    public void RemoverDetalle(CobrosDetalle detalle) {
+    public void RemoverDetalle(CobrosDetalle detalle)
+    {
         Cobro.CobrosDetalle.Remove(detalle);
         DetalleSeleccionado = detalle;
     }
 }
-

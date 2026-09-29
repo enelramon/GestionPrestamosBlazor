@@ -9,7 +9,7 @@
 <PageTitle>Create</PageTitle>
 <EditForm Model="Prestamo" OnValidSubmit="Guardar">
     <DataAnnotationsValidator />
-    
+
 
     <div class="container">
         <div class="card shadow-lg">
@@ -18,7 +18,7 @@
             </div>
 
             <div class="card-body ">
-    
+
                 @*Deudor*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Deudor</strong></label>
@@ -67,16 +67,13 @@
 
     public async Task Guardar()
     {
-        var creado = await prestamosService.Guardar(Prestamo);
+        var crearResult = await prestamosService.Guardar(Prestamo);
 
-        if (creado)
+        crearResult.OnSuccess(() =>
         {
             toastService.ShowSuccess("Cobro Guardado Correctamente");
             navigationManager.NavigateTo("/Prestamo/Index");
-        }
-        else
-        {
-            toastService.ShowError("No se pudo guardar correctamente");
-        }
+        });
+        crearResult.OnFailure(() => toastService.ShowError("No se pudo guardar correctamente"));
     }
 }

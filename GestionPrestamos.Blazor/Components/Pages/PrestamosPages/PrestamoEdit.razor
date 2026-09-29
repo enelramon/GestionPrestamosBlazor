@@ -21,12 +21,12 @@
                 @*Deudor*@
                 <div class="mb-3">
                     <label class="form-label"><strong>Deudor</strong></label>
-                        <InputSelect class="form-control" @bind-Value="Prestamo.DeudorId">
-                            <option value="" selected disabled>Elija una opci&oacute;n</option>
-                            @foreach (var deudor in ListaDeudores)
-                            {
-                                <option value="@deudor.DeudorId">@deudor.Nombres</option>
-                            }
+                    <InputSelect class="form-control" @bind-Value="Prestamo.DeudorId">
+                        <option value="" selected disabled>Elija una opci&oacute;n</option>
+                        @foreach (var deudor in ListaDeudores)
+                        {
+                            <option value="@deudor.DeudorId">@deudor.Nombres</option>
+                        }
                     </InputSelect>
                     <ValidationMessage For="(() => Prestamo.Deudor)" />
                 </div>
@@ -46,7 +46,7 @@
 
             @*footer*@
             <div class="card-footer text-center mt-2">
-                <a href="/Prestamo/Index" class="btn btn-secondary"> 
+                <a href="/Prestamo/Index" class="btn btn-secondary">
                     <span class="bi bi-arrow-left"></span> Volver
                 </a>
                 <button type="submit" class="btn btn-primary bi bi-floppy"> Modificar</button>
@@ -66,36 +66,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Prestamo = await prestamosService.Buscar(PrestamoId);
-        ListaDeudores = await deudoresService.GetList(d => d.DeudorId > 0);
+        var result = await prestamosService.Buscar(PrestamoId);
+        result.OnSuccess(prestamo => Prestamo = prestamo ?? new Prestamos());
 
+        ListaDeudores = await deudoresService.GetList(d => d.DeudorId > 0);
     }
 
     public async Task Modificar()
     {
-        var creado = await prestamosService.Guardar(Prestamo);
+        var result = await prestamosService.Guardar(Prestamo);
 
-        if (creado)
-        {
-            toastService.ShowSuccess( "Se ha modificado correctamente");
-        }
-        else
-        {
-            toastService.ShowError("No se ha podido modificar correctamente");
-        }
+        result.OnSuccess(() => toastService.ShowSuccess("Se ha modificado correctamente"));
+        result.OnFailure(() => toastService.ShowError("No se ha podido modificar"));
     }
 
-    private async Task Eliminar(){
-        var eliminado = await prestamosService.Eliminar(Prestamo.PrestamoId);
-
-        if (eliminado)
+    private async Task Eliminar()
+    {
+        var result = await prestamosService.Eliminar(Prestamo.PrestamoId);
+        result.OnSuccess(() =>
         {
             toastService.ShowSuccess("Se ha eliminado correctamente");
             navigationManager.NavigateTo("/Prestamo/Index");
-        }
-        else
-        {
-            toastService.ShowError("No se ha podido eliminar correctamente");
-        }
+        });
+        result.OnFailure(() => toastService.ShowError("No se ha podido eliminar correctamente"));
     }
 }

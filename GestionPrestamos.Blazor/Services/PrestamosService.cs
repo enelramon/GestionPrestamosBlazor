@@ -1,4 +1,5 @@
-﻿using GestionPrestamos.Context;
+﻿using Aplicada1.Core;
+using GestionPrestamos.Context;
 using GestionPrestamos.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -7,8 +8,23 @@ namespace GestionPrestamos.Services;
 
 public class PrestamosService(
     IDbContextFactory<Contexto> contextFactory
-):Aplicada1.Core.IService<Prestamos,int>
+) : Aplicada1.Core.IServiceResult<Prestamos, int>
 {
+
+    public async Task<Result> Guardar(Prestamos prestamo)
+    {
+        prestamo.Balance = prestamo.Monto;
+        if (!await Existe(prestamo.PrestamoId))
+        {
+            var inserto = await Insertar(prestamo);
+            return Result.Success(inserto);
+        }
+        else
+        {
+            var modifico = await Modificar(prestamo);
+            return Result.Success(modifico);
+        }
+    }
     private async Task<bool> Existe(int prestamoId)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
@@ -31,20 +47,8 @@ public class PrestamosService(
             .SaveChangesAsync() > 0;
     }
 
-    public async Task<bool> Guardar(Prestamos prestamo)
-    {
-        prestamo.Balance = prestamo.Monto;
-        if (!await Existe(prestamo.PrestamoId))
-        {
-            return await Insertar(prestamo);
-        }
-        else
-        {
-            return await Modificar(prestamo);
-        }
-    }
 
-    public async Task<Prestamos?> Buscar(int prestamoId)
+    public async Task<Result<Prestamos?>> Buscar(int prestamoId)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Prestamos
@@ -52,15 +56,7 @@ public class PrestamosService(
             .FirstOrDefaultAsync(p => p.PrestamoId == prestamoId);
     }
 
-    public async Task<bool> Eliminar(int prestamoId)
-    {
-        await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.Prestamos
-            .Where(p => p.PrestamoId == prestamoId)
-            .ExecuteDeleteAsync() > 0;
-    }
-
-    public async Task<List<Prestamos>> GetList(Expression<Func<Prestamos, bool>> criterio)
+    public async Task<Result<List<Prestamos>>> GetList(Expression<Func<Prestamos, bool>> criterio)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
         return await contexto.Prestamos
@@ -69,6 +65,16 @@ public class PrestamosService(
             .AsNoTracking()
             .ToListAsync();
     }
+
+    public async Task<Result> Eliminar(int prestamoId)
+    {
+        await using var contexto = await contextFactory.CreateDbContextAsync();
+        var eliminado = await contexto.Prestamos
+            .Where(p => p.PrestamoId == prestamoId)
+            .ExecuteDeleteAsync() > 0;
+        return Result.Success(eliminado);
+    }
+
     public async Task<List<Prestamos>> GetPrestamosPendientes(int deudorId)
     {
         await using var contexto = await contextFactory.CreateDbContextAsync();
@@ -77,13 +83,5 @@ public class PrestamosService(
             .OrderBy(p => p.PrestamoId)
             .AsNoTracking()
             .ToListAsync();
-    }
-
-    public async Task<Prestamos?> BuscarPrestamo(int id)
-    {
-        await using var contexto = await contextFactory.CreateDbContextAsync();
-        return await contexto.Prestamos.
-            Include(p => p.Deudor)
-            .FirstOrDefaultAsync(p => p.DeudorId == id);
     }
 }
